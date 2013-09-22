@@ -20,20 +20,12 @@ public abstract class NetworkedTileEntity extends OpenTileEntity implements
 		syncMap.put(key, obj);
 	}
 
-	public void sync(int timeout, boolean syncMeta) {
-		if (syncMeta) {
-			super.sync();
-		}
+	public void sync(int timeout) {
 		syncMap.sync(worldObj, this, xCoord, yCoord, zCoord, timeout);
 	}
 
-	public void sync(boolean syncMeta) {
-		sync(1, syncMeta);
-	}
-
-	@Override
 	public void sync() {
-		sync(1, true);
+		sync(1);
 	}
 
 	@Override

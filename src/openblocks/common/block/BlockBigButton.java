@@ -52,7 +52,7 @@ public class BlockBigButton extends OpenBlock {
 
 		ForgeDirection direction = tile.getRotation();
 
-		boolean pressed = tile.getFlag1();
+		boolean pressed = tile.isActive();
 
 		switch (direction) {
 			case EAST:
@@ -80,13 +80,13 @@ public class BlockBigButton extends OpenBlock {
     @Override
     public int isProvidingWeakPower(IBlockAccess world, int x, int y, int z, int side) {
     	TileEntityBigButton te = getTileEntity(world, x, y, z, TileEntityBigButton.class);
-    	return te != null && te.getFlag1() ? 15 : 0;
+    	return te != null && te.isActive() ? 15 : 0;
     }
 
     @Override
     public int isProvidingStrongPower(IBlockAccess world, int x, int y, int z, int side) {
     	ForgeDirection direction = ForgeDirection.getOrientation(side).getOpposite();
         TileEntityBigButton button = getTileEntity(world, x, y, z, TileEntityBigButton.class);
-    	return (direction == button.getRotation() && button.getFlag1()) ? 15 : 0;
+    	return (direction == button.getRotation() && button.isActive()) ? 15 : 0;
     }
 }

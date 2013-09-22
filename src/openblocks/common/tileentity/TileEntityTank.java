@@ -204,7 +204,7 @@ public class TileEntityTank extends NetworkedTileEntity implements
 	}
 
 	@Override
-	protected void initialize() {
+	protected void firstUpdate() {
 		findNeighbours();
 		updateNeighbours();
 	}
@@ -272,7 +272,7 @@ public class TileEntityTank extends NetworkedTileEntity implements
 				liquidRenderAmount.setValue((short)0);
 				liquidId.setValue(0);
 			}
-			sync(1, false);
+			sync();
 		} else {
 			interpolateLiquidLevel();
 			flowTimer += 0.1f;

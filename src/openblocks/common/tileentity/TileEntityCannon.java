@@ -22,7 +22,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class TileEntityCannon extends NetworkedTileEntity implements IAwareTile {
 
-
 	private EntityCannon cannon = null;
 
 	public SyncableDouble pitch = new SyncableDouble();

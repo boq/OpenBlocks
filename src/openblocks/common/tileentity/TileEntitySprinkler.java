@@ -27,9 +27,12 @@ import openblocks.common.api.IAwareTile;
 import openblocks.common.api.ISurfaceAttachment;
 import openblocks.utils.BlockUtils;
 import openblocks.utils.InventoryUtils;
+import openblocks.utils.MetadataUtils;
 
 public class TileEntitySprinkler extends OpenTileEntity implements IAwareTile,
 		ISurfaceAttachment, IFluidHandler, IInventory {
+
+	public static final int FLAG_ENABLED = 2;
 
 	// erpppppp
 	private FluidStack water = new FluidStack(FluidRegistry.WATER, 1);
@@ -74,9 +77,10 @@ public class TileEntitySprinkler extends OpenTileEntity implements IAwareTile,
 
 	private void sprayParticles() {
 		if (worldObj == null || !worldObj.isRemote) return;
+		
+		final ForgeDirection rotation = getRotation();
 		for (int i = 0; i < 6; i++) {
 			float offset = (i - 2.5f) / 5f;
-			ForgeDirection rotation = getRotation();
 			OpenBlocks.proxy.spawnLiquidSpray(worldObj, water, xCoord + 0.5
 					+ (offset * 0.6 * rotation.offsetX), yCoord, zCoord + 0.5
 					+ (offset * 0.6 * rotation.offsetZ), rotation, getSprayPitch(), 2 * offset);
@@ -107,9 +111,11 @@ public class TileEntitySprinkler extends OpenTileEntity implements IAwareTile,
 			if (OpenBlocks.proxy.getTicks(worldObj) % 1200 == 0) {
 				hasBonemeal = InventoryUtils.consumeInventoryItem(inventory, bonemeal);
 			}
+
 			if (OpenBlocks.proxy.getTicks(worldObj) % 60 == 0) {
-				setEnabled(tank.drain(1, true) != null);
-				sync();
+				MetadataAccess meta = readMetadata();
+				MetadataUtils.setFlag(meta, FLAG_ENABLED, tank.drain(1, true) != null);
+				meta.write();
 			}
 
 			// if it's enabled..
@@ -123,12 +129,8 @@ public class TileEntitySprinkler extends OpenTileEntity implements IAwareTile,
 		}
 	}
 
-	private void setEnabled(boolean b) {
-		setFlag1(b);
-	}
-
 	private boolean isEnabled() {
-		return getFlag1();
+		return MetadataUtils.getFlag(readMetadata(), FLAG_ENABLED);
 	}
 
 	@Override
@@ -219,7 +221,6 @@ public class TileEntitySprinkler extends OpenTileEntity implements IAwareTile,
 	@Override
 	public void onBlockPlacedBy(EntityPlayer player, ForgeDirection side, ItemStack stack, float hitX, float hitY, float hitZ) {
 		setRotation(BlockUtils.get2dOrientation(player));
-		sync();
 	}
 
 	@Override
@@ -248,11 +249,6 @@ public class TileEntitySprinkler extends OpenTileEntity implements IAwareTile,
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
 		inventory.readFromNBT(tag);
-		if (tag.hasKey("rotation")) {
-			byte ordinal = tag.getByte("rotation");
-			setRotation(ForgeDirection.getOrientation(ordinal));
-			sync();
-		}
 	}
 
 	@Override

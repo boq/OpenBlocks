@@ -1,7 +1,5 @@
 package openblocks.common.tileentity;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,128 +9,58 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.OpenBlocks;
 import openblocks.common.block.OpenBlock;
+import openblocks.common.tileentity.MetadataAccess.WorldAccess;
+import openblocks.utils.MetadataUtils;
+
+import com.google.common.base.Preconditions;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenTileEntity extends TileEntity {
 
-	private boolean initialized = false;
-	private boolean isActive = false;
+	private boolean updated = false;
 
-	private boolean isUsedForClientInventoryRendering = false;
+	private MetadataAccess meta;
 
-	/**
-	 * The block rotation stored in metadata. This can be used for
-	 * NORTH/EAST/SOUTH/WEST
-	 */
-	private ForgeDirection rotation = ForgeDirection.UNKNOWN;
+	public OpenTileEntity() {}
 
-	/**
-	 * A random flag that can be stored in metadata
-	 */
-	private boolean flag1 = false;
+	// use this to inject fake data for rendering
+	public void setMeta(MetadataAccess meta) {
+		Preconditions.checkNotNull(meta);
+		this.meta = meta;
+	}
 
-	/**
-	 * A random flag that can be stored in metadata
-	 */
-	private boolean flag2 = false;
+	public MetadataAccess readMetadata() {
+		if (meta == null)
+		// nobody set anything? Then we probably aren't rendering now
+		meta = new WorldAccess(this);
 
-	/**
-	 * Get the current block rotation
-	 *
-	 * @return the block rotation
-	 */
-	public ForgeDirection getRotation() {
-		if (isUsedForClientInventoryRendering) {
-			return rotation;
-		}
-		int ordinal = (getMetadata() & 0x3) + 2;
-		ForgeDirection direction = ForgeDirection.getOrientation(ordinal);
-		return direction;
+		// make sure we have current value
+		meta.read();
+		return meta;
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void prepareForInventoryRender(Block block, int metadata) {
-		isUsedForClientInventoryRendering = true;
-	}
-
-	/**
-	 * Set the block rotation. To sync to the client call sync()
-	 *
-	 * @param rot
-	 */
-	public void setRotation(ForgeDirection rot) {
-		if (rot == ForgeDirection.UP || rot == ForgeDirection.DOWN
-				|| rot == ForgeDirection.UNKNOWN) {
-			rot = ForgeDirection.EAST;
-		}
-		rotation = rot;
-	}
-
-	private boolean getFlag(int index) {
-		if (index > 1) return false;
-		if (index < 0) return false;
-		index = 4 + 4 * index;
-		int currentMeta = getMetadata();
-		boolean result = (currentMeta & index) == index;
-		return result;
-	}
-
-	public boolean getFlag1() {
-		if (isUsedForClientInventoryRendering) {
-			return flag1;
-		}
-		return getFlag(0);
-	}
-
-	public boolean getFlag2() {
-		if (isUsedForClientInventoryRendering) {
-			return flag2;
-		}
-		return getFlag(1);
-	}
-
-	public void setFlag1(boolean on) {
-		flag1 = on;
-	}
-
-	public void setFlag2(boolean on) {
-		flag2 = on;
-	}
+	public void prepareForInventoryRender(Block block, int metadata) {}
 
 	@Override
 	public void updateEntity() {
-		isActive = true;
-		if (!initialized) {
-			initialize();
-			initialized = true;
+		if (!updated) {
+			firstUpdate();
+			updated = true;
 		}
-	}
-
-	public boolean isLoaded() {
-		return initialized;
 	}
 
 	public boolean isAddedToWorld() {
 		return worldObj != null;
 	}
 
-	protected void initialize() {
-		flag1 = getFlag1();
-		flag2 = getFlag2();
-		rotation = getRotation();
-	}
-
-	protected boolean isActive() {
-		return isActive;
-	}
+	protected void firstUpdate() {}
 
 	@Override
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
-	}
-
-	@Override
-	public void onChunkUnload() {
-		isActive = false;
 	}
 
 	public TileEntity getTileInDirection(ForgeDirection direction) {
@@ -158,21 +86,6 @@ public abstract class OpenTileEntity extends TileEntity {
 		worldObj.addBlockEvent(xCoord, yCoord, zCoord, worldObj.getBlockId(xCoord, yCoord, zCoord), key, value);
 	}
 
-	public void sync() {
-		OpenBlock block = getBlock();
-		if (block != null) {
-			int ordinal = rotation.ordinal() - 2;
-			int currentMeta = getMetadata();
-			int newMeta = ordinal;
-			newMeta = (flag1? 4 : 0) | (newMeta & 3);
-			newMeta = (flag2? 8 : 0) | (newMeta & 7);
-			if (currentMeta != newMeta) {
-				worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, newMeta, 3);
-			}
-		}
-		worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
-	}
-
 	@Override
 	public boolean shouldRefresh(int oldID, int newID, int oldMeta, int newMeta, World world, int x, int y, int z) {
 		return oldID != newID;
@@ -184,19 +97,22 @@ public abstract class OpenTileEntity extends TileEntity {
 		return null;
 	}
 
-	public int getMetadata() {
-		return worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
-	}
-
 	public void openGui(EntityPlayer player, Enum<?> gui) {
 		player.openGui(OpenBlocks.instance, gui.ordinal(), worldObj, xCoord, yCoord, zCoord);
 	}
 
 	public AxisAlignedBB getBB() {
-		return AxisAlignedBB.getAABBPool().getAABB(xCoord, yCoord, zCoord, xCoord+1, yCoord+1, zCoord+1);
+		return AxisAlignedBB.getAABBPool().getAABB(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
 	}
 
-	public boolean isRenderedInInventory() {
-		return isUsedForClientInventoryRendering;
+	// most common metadata configuration
+	protected void setRotation(ForgeDirection rotation) {
+		MetadataAccess meta = readMetadata();
+		MetadataUtils.setRotation(meta, rotation);
+		meta.write();
+	}
+
+	public ForgeDirection getRotation() {
+		return MetadataUtils.getRotation(readMetadata());
 	}
 }

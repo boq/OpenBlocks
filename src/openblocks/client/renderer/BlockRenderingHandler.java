@@ -13,69 +13,69 @@ import net.minecraftforge.common.ForgeDirection;
 import openblocks.Log;
 import openblocks.OpenBlocks;
 import openblocks.client.renderer.tileentity.OpenRenderHelper;
-import openblocks.common.tileentity.OpenTileEntity;
-import openblocks.common.tileentity.TileEntityBearTrap;
-import openblocks.common.tileentity.TileEntityBigButton;
-import openblocks.common.tileentity.TileEntityCannon;
-import openblocks.common.tileentity.TileEntityFan;
-import openblocks.common.tileentity.TileEntityFlag;
-import openblocks.common.tileentity.TileEntityGrave;
-import openblocks.common.tileentity.TileEntityLightbox;
-import openblocks.common.tileentity.TileEntitySprinkler;
-import openblocks.common.tileentity.TileEntityTarget;
-import openblocks.common.tileentity.TileEntityTrophy;
-import openblocks.common.tileentity.TileEntityVacuumHopper;
+import openblocks.common.tileentity.*;
+import openblocks.utils.MetadataUtils;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 
-	private final Map<Block, TileEntity> inventoryTileEntities;
+	private final Map<Block, TileEntity> inventoryTileEntities = Maps.newIdentityHashMap();
 
-	public BlockRenderingHandler() {
-		inventoryTileEntities = Maps.newIdentityHashMap();
-
-		TileEntityLightbox teLightbox = new TileEntityLightbox();
-		inventoryTileEntities.put(OpenBlocks.Blocks.lightbox, teLightbox);
-
-		TileEntityTarget teTarget = new TileEntityTarget();
-		teTarget.setEnabled(true);
-		teTarget.setRotation(ForgeDirection.WEST);
-		inventoryTileEntities.put(OpenBlocks.Blocks.target, teTarget);
-
-		TileEntityGrave teGrave = new TileEntityGrave();
-		inventoryTileEntities.put(OpenBlocks.Blocks.grave, teGrave);
-
-		TileEntityFlag teFlag = new TileEntityFlag();
-		teFlag.setFlag1(true);
-		inventoryTileEntities.put(OpenBlocks.Blocks.flag, teFlag);
-
-		TileEntityTrophy teTrophy = new TileEntityTrophy();
-		inventoryTileEntities.put(OpenBlocks.Blocks.trophy, teTrophy);
-
-		TileEntityBearTrap teBearTrap = new TileEntityBearTrap();
-		inventoryTileEntities.put(OpenBlocks.Blocks.bearTrap, teBearTrap);
-
-		TileEntitySprinkler teSprinkler = new TileEntitySprinkler();
-		inventoryTileEntities.put(OpenBlocks.Blocks.sprinkler, teSprinkler);
-
-		TileEntityVacuumHopper teHopper = new TileEntityVacuumHopper();
-		inventoryTileEntities.put(OpenBlocks.Blocks.vacuumHopper, teHopper);
-
-		TileEntityCannon teCannon = new TileEntityCannon();
-		teCannon.disableLineRender();
-		inventoryTileEntities.put(OpenBlocks.Blocks.cannon, teCannon);
-
-		TileEntityBigButton teButton = new TileEntityBigButton();
-		inventoryTileEntities.put(OpenBlocks.Blocks.bigButton, teButton);
+	private void addRenderer(Block target, OpenTileEntity te, MetadataAccess meta) {
+		te.setMeta(meta);
+		inventoryTileEntities.put(target, te);
+	}
+	
+	private void addRenderer(Block target, OpenTileEntity te) {
+		addRenderer(target, te, new MetadataAccess());
+	}
+	
+	private void addRenderer(Block target, TileEntity te) {
+		inventoryTileEntities.put(target, te);
+	}
+	
+	public BlockRenderingHandler() {		
+		addRenderer(OpenBlocks.Blocks.lightbox, new TileEntityLightbox());
+		addRenderer(OpenBlocks.Blocks.grave, new TileEntityGrave());
+		addRenderer(OpenBlocks.Blocks.trophy, new TileEntityTrophy());
+		addRenderer(OpenBlocks.Blocks.sprinkler, new TileEntitySprinkler());
+		addRenderer(OpenBlocks.Blocks.vacuumHopper, new TileEntityVacuumHopper());
+		addRenderer(OpenBlocks.Blocks.bigButton,  new TileEntityBigButton());
+		addRenderer(OpenBlocks.Blocks.fan, new TileEntityFan());
 		
-		TileEntityFan teFan = new TileEntityFan();
-		inventoryTileEntities.put(OpenBlocks.Blocks.fan, teFan);
+		{
+			TileEntityCannon te = new TileEntityCannon();
+			te.disableLineRender();
+			addRenderer(OpenBlocks.Blocks.cannon, te);
+		}
+		
+		{
+			TileEntityBearTrap te = new TileEntityBearTrap();
+			te.setOpen();
+			addRenderer(OpenBlocks.Blocks.bearTrap, te);
+		}
+		
+		{
+			MetadataAccess fakeMeta = new MetadataAccess();
+			MetadataUtils.setRotation(fakeMeta, ForgeDirection.WEST);
+			MetadataUtils.setFlag(fakeMeta, TileEntityTarget.FLAG_ENABLED, true);
+			fakeMeta.write();
+			addRenderer(OpenBlocks.Blocks.target, new TileEntityTarget(), fakeMeta);
+		}
+
+		{
+			MetadataAccess fakeMeta = new MetadataAccess();
+			MetadataUtils.setFlag(fakeMeta, TileEntityFlag.FLAG_ON_GROUND, true);
+			fakeMeta.write();
+			addRenderer(OpenBlocks.Blocks.flag,new TileEntityFlag(), fakeMeta);
+		}
 	}
 
 	@Override
@@ -107,6 +107,7 @@ public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 			}
 		} catch (Exception e) {
 			Log.severe(e, "Error during block '%s' rendering", block.getUnlocalizedName());
+			Throwables.propagate(e);
 		}
 	}
 

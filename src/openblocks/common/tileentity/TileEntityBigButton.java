@@ -1,10 +1,5 @@
 package openblocks.common.tileentity;
 
-import org.lwjgl.opengl.GL11;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -16,13 +11,35 @@ import openblocks.OpenBlocks.Gui;
 import openblocks.common.GenericInventory;
 import openblocks.common.api.IAwareTile;
 import openblocks.common.api.ISurfaceAttachment;
+import openblocks.utils.MetadataUtils;
+
+import org.lwjgl.opengl.GL11;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TileEntityBigButton extends OpenTileEntity implements IAwareTile, ISurfaceAttachment, IInventory {
+
+	private static final int FLAG_ACTIVE = 2;
 
 	private int tickCounter = 0;
 
 	private GenericInventory inventory = new GenericInventory("bigbutton", true, 1);
 
+	public boolean isActive() {
+		return MetadataUtils.getFlag(readMetadata(), FLAG_ACTIVE);
+	}
+	
+	private void changeState(boolean state) {
+		MetadataAccess meta = readMetadata();
+		MetadataUtils.setFlag(meta, FLAG_ACTIVE, state);
+		meta.write();
+		
+		ForgeDirection rot = MetadataUtils.getRotation(meta);
+		worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, OpenBlocks.Blocks.bigButton.blockID);
+		worldObj.notifyBlocksOfNeighborChange(xCoord + rot.offsetX, yCoord + rot.offsetY, zCoord + rot.offsetZ, OpenBlocks.Blocks.bigButton.blockID);
+	}
+	
 	@Override
 	public void updateEntity() {
 		super.updateEntity();
@@ -31,8 +48,7 @@ public class TileEntityBigButton extends OpenTileEntity implements IAwareTile, I
 				tickCounter--;
 				if (tickCounter <= 0) {
 					worldObj.playSoundEffect(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D, "random.click", 0.3F, 0.5F);
-					setFlag1(false);
-					sync();
+					changeState(false);
 				}
 			}
 		}
@@ -55,22 +71,12 @@ public class TileEntityBigButton extends OpenTileEntity implements IAwareTile, I
 			if (player.isSneaking()) {
 				openGui(player, Gui.BigButton);
 			} else {
-				setFlag1(true);
 				tickCounter = getTickTime();
 				worldObj.playSoundEffect(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D, "random.click", 0.3F, 0.6F);
-				sync();
+				changeState(true);
 			}
 		}
 		return true;
-	}
-
-	@Override
-	public void sync() {
-		super.sync();
-		worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, OpenBlocks.Blocks.bigButton.blockID);
-		ForgeDirection rot = getRotation();
-		worldObj.notifyBlocksOfNeighborChange(xCoord + rot.offsetX, yCoord + rot.offsetY, zCoord + rot.offsetZ, OpenBlocks.Blocks.bigButton.blockID);
-
 	}
 
 	@Override
@@ -79,7 +85,6 @@ public class TileEntityBigButton extends OpenTileEntity implements IAwareTile, I
 	@Override
 	public void onBlockPlacedBy(EntityPlayer player, ForgeDirection side, ItemStack stack, float hitX, float hitY, float hitZ) {
 		setRotation(side.getOpposite());
-		sync();
 	}
 
 	@Override

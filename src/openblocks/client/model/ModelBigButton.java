@@ -23,7 +23,7 @@ public class ModelBigButton extends ModelBase {
 
 	public void render(TileEntityBigButton te, float f) {
 		float f5 = 0.0625F;
-		if (te.getFlag1()) {
+		if (te.isActive()) {
 			button.rotationPointZ = 1f;
 		}else {
 			button.rotationPointZ = 0;

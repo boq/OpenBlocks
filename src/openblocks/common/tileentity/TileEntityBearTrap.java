@@ -35,11 +35,6 @@ public class TileEntityBearTrap extends NetworkedTileEntity implements
 	}
 
 	@Override
-	protected void initialize() {
-
-	}
-
-	@Override
 	public void updateEntity() {
 		super.updateEntity();
 		if (trappedEntityId.getValue() != 0) {
@@ -62,7 +57,7 @@ public class TileEntityBearTrap extends NetworkedTileEntity implements
 			}
 		}
 
-		sync(2, false);
+		sync(2);
 	}
 
 	public void onEntityCollided(Entity entity) {
@@ -108,7 +103,6 @@ public class TileEntityBearTrap extends NetworkedTileEntity implements
 	@Override
 	public void onBlockPlacedBy(EntityPlayer player, ForgeDirection side, ItemStack stack, float hitX, float hitY, float hitZ) {
 		setRotation(BlockUtils.get2dOrientation(player));
-		sync();
 	}
 
 	@Override

@@ -8,9 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.INetworkManager;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.OpenBlocks;
@@ -18,10 +15,10 @@ import openblocks.common.GenericInventory;
 import openblocks.common.api.IAwareTile;
 import openblocks.integration.ModuleBuildCraft;
 import openblocks.utils.InventoryUtils;
+import openblocks.utils.MetadataUtils;
 import cpw.mods.fml.common.Loader;
 
-public class TileEntityVacuumHopper extends OpenTileEntity implements IInventory, IAwareTile {
-
+public class TileEntityVacuumHopper extends Packet132TileEntity implements IInventory, IAwareTile {
 	private GenericInventory inventory = new GenericInventory("vacuumhopper", true, 10);
 
 	@Override
@@ -34,21 +31,21 @@ public class TileEntityVacuumHopper extends OpenTileEntity implements IInventory
 
 		@SuppressWarnings("unchecked")
 		List<EntityItem> surroundingItems = worldObj.getEntitiesWithinAABB(EntityItem.class, getBB().expand(3, 3, 3));
-		
-		for(EntityItem item : surroundingItems) {
-			
+
+		for (EntityItem item : surroundingItems) {
+
 			if (!item.isDead) {
-				
+
 				ItemStack stack = item.getEntityItem();
 				if (InventoryUtils.testInventoryInsertion(this, stack) > 0) {
-					
+
 					double x = (xCoord + 0.5D - item.posX) / 15.0D;
 					double y = (yCoord + 0.5D - item.posY) / 15.0D;
 					double z = (zCoord + 0.5D - item.posZ) / 15.0D;
-	
+
 					double distance = Math.sqrt(x * x + y * y + z * z);
 					double var11 = 1.0D - distance;
-	
+
 					if (var11 > 0.0D) {
 						var11 *= var11;
 						item.motionX += x / distance * var11 * 0.05;
@@ -70,8 +67,8 @@ public class TileEntityVacuumHopper extends OpenTileEntity implements IInventory
 					int previousSize = nextStack.stackSize;
 					nextStack = nextStack.copy();
 					if (tileOnSurface instanceof IInventory) {
-						InventoryUtils.insertItemIntoInventory((IInventory) tileOnSurface, nextStack);
-					}else {
+						InventoryUtils.insertItemIntoInventory((IInventory)tileOnSurface, nextStack);
+					} else {
 						if (Loader.isModLoaded(openblocks.Mods.BUILDCRAFT)) {
 							int inserted = ModuleBuildCraft.tryAcceptIntoPipe(tileOnSurface, nextStack, getSurface());
 							nextStack.stackSize -= inserted;
@@ -93,13 +90,7 @@ public class TileEntityVacuumHopper extends OpenTileEntity implements IInventory
 	}
 
 	public ForgeDirection getSurface() {
-		if (getFlag1()) {
-			return ForgeDirection.DOWN;
-		}else if (getFlag2()) {
-			return ForgeDirection.UP;
-		}else {
-			return getRotation();
-		}
+		return MetadataUtils.getDirection(readMetadata());
 	}
 
 	@Override
@@ -178,11 +169,9 @@ public class TileEntityVacuumHopper extends OpenTileEntity implements IInventory
 
 	@Override
 	public void onBlockPlacedBy(EntityPlayer player, ForgeDirection side, ItemStack stack, float hitX, float hitY, float hitZ) {
-		ForgeDirection surface = side.getOpposite();
-		setRotation(side.getOpposite());
-		setFlag1(surface == ForgeDirection.DOWN);
-		setFlag2(surface == ForgeDirection.UP);
-		sync();
+		MetadataAccess meta = readMetadata();
+		MetadataUtils.setDirection(meta, side.getOpposite());
+		meta.write();
 	}
 
 	@Override
@@ -192,36 +181,18 @@ public class TileEntityVacuumHopper extends OpenTileEntity implements IInventory
 
 	public void onEntityCollidedWithBlock(Entity entity) {
 		if (!worldObj.isRemote && entity instanceof EntityItem) {
-			EntityItem item = (EntityItem) entity;
+			EntityItem item = (EntityItem)entity;
 			ItemStack stack = item.getEntityItem().copy();
 			InventoryUtils.insertItemIntoInventory(inventory, stack);
 			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 			if (stack.stackSize == 0) {
 				item.setDead();
-			}else {
+			} else {
 				item.setEntityItemStack(stack);
 			}
 		}
 	}
 
-	@Override
-	public Packet getDescriptionPacket() {
-		Packet132TileEntityData packet = new Packet132TileEntityData();
-		packet.actionType = 0;
-		packet.xPosition = xCoord;
-		packet.yPosition = yCoord;
-		packet.zPosition = zCoord;
-		NBTTagCompound nbt = new NBTTagCompound();
-		writeToNBT(nbt);
-		packet.data = nbt;
-		return packet;
-	}
-
-	@Override
-	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
-		readFromNBT(pkt.data);
-	}
-	
 	@Override
 	public void writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);

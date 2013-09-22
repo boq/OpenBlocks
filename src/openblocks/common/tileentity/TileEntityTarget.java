@@ -3,17 +3,23 @@ package openblocks.common.tileentity;
 import java.util.List;
 
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.Config;
+import openblocks.common.api.IAwareTile;
 import openblocks.common.api.ISurfaceAttachment;
+import openblocks.utils.BlockUtils;
+import openblocks.utils.MetadataUtils;
 
 public class TileEntityTarget extends OpenTileEntity implements
-		ISurfaceAttachment {
+		ISurfaceAttachment, IAwareTile {
 
+	public static final int FLAG_ENABLED = 2;
+	
 	private int strength = 0;
 	private int tickCounter = -1;
 
@@ -30,12 +36,8 @@ public class TileEntityTarget extends OpenTileEntity implements
 		}
 	}
 
-	public void setEnabled(boolean en) {
-		setFlag1(en);
-	}
-
 	public boolean isEnabled() {
-		return getFlag1();
+		return MetadataUtils.getFlag(readMetadata(), FLAG_ENABLED);
 	}
 
 	public float getTargetRotation() {
@@ -74,16 +76,39 @@ public class TileEntityTarget extends OpenTileEntity implements
 		}
 		worldObj.playSoundEffect(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, isPowered? "openblocks:open" : "openblocks:close", 0.5f, 1.0f);
 
-		setEnabled(isPowered);
-		sync();
+		MetadataAccess meta = readMetadata();
+		MetadataUtils.setFlag(meta, FLAG_ENABLED, isPowered);
+		meta.write();
 	}
 
-	public void neighbourBlockChanged() {
+	@Override
+	public void onNeighbourChanged(int blockId) {
 		onRedstoneChanged();
+	}
+	
+	@Override
+	public void onBlockPlacedBy(EntityPlayer player, ForgeDirection side, ItemStack stack, float hitX, float hitY, float hitZ) {
+		setRotation(BlockUtils.get2dOrientation(player));
 	}
 
 	@Override
 	public ForgeDirection getSurfaceDirection() {
 		return ForgeDirection.DOWN;
+	}
+
+	@Override
+	public void onBlockBroken() {}
+
+	@Override
+	public void onBlockAdded() {}
+
+	@Override
+	public boolean onBlockActivated(EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+		return false;
+	}
+
+	@Override
+	public boolean onBlockEventReceived(int eventId, int eventParam) {
+		return false;
 	}
 }

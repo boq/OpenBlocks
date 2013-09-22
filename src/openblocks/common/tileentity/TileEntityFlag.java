@@ -16,11 +16,14 @@ import openblocks.sync.ISyncableObject;
 import openblocks.sync.SyncableFloat;
 import openblocks.sync.SyncableInt;
 import openblocks.utils.BlockUtils;
+import openblocks.utils.MetadataUtils;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class TileEntityFlag extends NetworkedTileEntity implements
 		ISurfaceAttachment, IAwareTile {
+
+	public static final int FLAG_ON_GROUND = 2;
 
 	public enum Keys {
 		angle, colorIndex
@@ -33,9 +36,6 @@ public class TileEntityFlag extends NetworkedTileEntity implements
 		addSyncedObject(Keys.angle, angle);
 		addSyncedObject(Keys.colorIndex, colorIndex);
 	}
-
-	@Override
-	protected void initialize() {}
 
 	@Override
 	public void onSynced(List<ISyncableObject> changes) {}
@@ -66,12 +66,8 @@ public class TileEntityFlag extends NetworkedTileEntity implements
 		angle.setValue(ang);
 	}
 
-	public void setOnGround(boolean onGround) {
-		setFlag1(onGround);
-	}
-
 	public boolean isOnGround() {
-		return getFlag1();
+		return MetadataUtils.getFlag(readMetadata(), FLAG_ON_GROUND);
 	}
 
 	public int getColor() {
@@ -81,13 +77,8 @@ public class TileEntityFlag extends NetworkedTileEntity implements
 
 	@Override
 	public ForgeDirection getSurfaceDirection() {
-		ForgeDirection rotation;
-		if (getFlag1()) {
-			rotation = ForgeDirection.DOWN;
-		} else {
-			rotation = getRotation();
-		}
-		return rotation;
+		MetadataAccess meta = readMetadata();
+		return MetadataUtils.getFlag(meta, FLAG_ON_GROUND) ? ForgeDirection.DOWN : MetadataUtils.getRotation(meta);
 	}
 
 	public float getAngle() {
@@ -127,8 +118,12 @@ public class TileEntityFlag extends NetworkedTileEntity implements
 
 		setAngle(ang);
 		setColorIndex(stack.getItemDamage());
-		setRotation(side.getOpposite());
-		setOnGround(surface == ForgeDirection.DOWN);
+		
+		MetadataAccess meta = readMetadata();
+		MetadataUtils.setRotation(meta, side.getOpposite());
+		MetadataUtils.setFlag(meta, FLAG_ON_GROUND, surface == ForgeDirection.DOWN);
+		meta.write();
+		
 		sync();
 	}
 

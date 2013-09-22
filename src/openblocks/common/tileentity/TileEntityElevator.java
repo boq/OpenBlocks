@@ -163,8 +163,4 @@ public class TileEntityElevator extends OpenTileEntity {
 		return false; // Don't update the block and don't block placement if
 						// it's not dye we're using
 	}
-
-	@Override
-	protected void initialize() {}
-
 }

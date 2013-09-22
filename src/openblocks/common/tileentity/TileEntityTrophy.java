@@ -4,9 +4,6 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.INetworkManager;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.common.TrophyHandler.Trophy;
 import openblocks.common.api.IAwareTile;
@@ -17,33 +14,13 @@ import com.google.common.base.Preconditions;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TileEntityTrophy extends OpenTileEntity implements IAwareTile {
+public class TileEntityTrophy extends Packet132TileEntity implements IAwareTile {
 
 	public static Trophy debugTrophy = Trophy.Wolf;
 
 	public Trophy trophyType;
 
-	private ForgeDirection rotation = ForgeDirection.EAST;
-
 	private int sinceLastActivate = 0;
-
-	@Override
-	public Packet getDescriptionPacket() {
-		Packet132TileEntityData packet = new Packet132TileEntityData();
-		packet.actionType = 0;
-		packet.xPosition = xCoord;
-		packet.yPosition = yCoord;
-		packet.zPosition = zCoord;
-		NBTTagCompound nbt = new NBTTagCompound();
-		writeToNBT(nbt);
-		packet.data = nbt;
-		return packet;
-	}
-
-	@Override
-	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
-		readFromNBT(pkt.data);
-	}
 
 	@Override
 	public void updateEntity() {
@@ -55,9 +32,6 @@ public class TileEntityTrophy extends OpenTileEntity implements IAwareTile {
 			}
 		}
 	}
-
-	@Override
-	protected void initialize() {}
 
 	@Override
 	public void onBlockBroken() {}
@@ -99,8 +73,8 @@ public class TileEntityTrophy extends OpenTileEntity implements IAwareTile {
 				debugTrophy = Trophy.values()[next];
 				trophyType = debugTrophy;
 			}
-			rotation = BlockUtils.get2dOrientation(player);
-			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+			
+			setRotation(BlockUtils.get2dOrientation(player));
 		}
 	}
 
@@ -112,12 +86,11 @@ public class TileEntityTrophy extends OpenTileEntity implements IAwareTile {
 	@Override
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
+		
 		if (tag.hasKey("trophytype")) {
 			trophyType = Trophy.valueOf(tag.getString("trophytype"));
 		}
-		if (tag.hasKey("rotation")) {
-			rotation = ForgeDirection.getOrientation(tag.getInteger("rotation"));
-		}
+		
 		if (tag.hasKey("sinceLastActivate")) {
 			sinceLastActivate = tag.getInteger("sinceLastActivate");
 		}
@@ -135,13 +108,7 @@ public class TileEntityTrophy extends OpenTileEntity implements IAwareTile {
 	public void writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
 		tag.setString("trophytype", trophyType.toString());
-		tag.setInteger("rotation", rotation.ordinal());
 		tag.setInteger("sinceLastActivate", sinceLastActivate);
-	}
-
-	@Override
-	public ForgeDirection getRotation() {
-		return rotation;
 	}
 
 	@Override

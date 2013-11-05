@@ -5,7 +5,9 @@ import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.util.Icon;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.Config;
+import openblocks.asm.mixins.MixinPartsRegistry;
 import openblocks.common.tileentity.TileEntityXPBottler;
+import openblocks.mixins.SidedInventoryMixin;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -21,7 +23,7 @@ public class BlockXPBottler extends OpenBlock {
 
 	public BlockXPBottler() {
 		super(Config.blockXPBottlerId, Material.ground);
-		setupBlock(this, "xpbottler", TileEntityXPBottler.class);
+		setupBlock(this, "xpbottler", MixinPartsRegistry.instance.createClass(TileEntityXPBottler.class, SidedInventoryMixin.class));
 		setRotationMode(BlockRotationMode.FOUR_DIRECTIONS);
 	}
 

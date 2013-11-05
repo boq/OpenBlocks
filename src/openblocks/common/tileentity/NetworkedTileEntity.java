@@ -11,6 +11,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.Log;
+import openblocks.asm.mixins.ExtensionPoint;
 import openblocks.sync.*;
 
 import com.google.common.collect.ImmutableList;
@@ -101,12 +102,14 @@ public abstract class NetworkedTileEntity extends OpenTileEntity implements
 	}
 	
 	@Override
+	@ExtensionPoint
 	public void writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
 		syncMap.writeToNBT(tag);
 	}
 	
 	@Override
+	@ExtensionPoint
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
 		syncMap.readFromNBT(tag);

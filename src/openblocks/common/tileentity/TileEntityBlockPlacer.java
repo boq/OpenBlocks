@@ -15,7 +15,7 @@ import openblocks.common.container.ContainerBlockPlacer;
 import openblocks.utils.InventoryUtils;
 import openblocks.utils.OpenBlocksFakePlayer;
 
-public class TileEntityBlockPlacer extends OpenTileEntity
+public abstract class TileEntityBlockPlacer extends OpenTileEntity
 		implements INeighbourAwareTile, IActivateAwareTile, IInventory, IHasGui {
 
 	static final int BUFFER_SIZE = 9;

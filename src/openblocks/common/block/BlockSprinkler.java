@@ -6,13 +6,15 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.Config;
+import openblocks.asm.mixins.MixinPartsRegistry;
 import openblocks.common.tileentity.TileEntitySprinkler;
+import openblocks.mixins.InventoryMixin;
 
 public class BlockSprinkler extends OpenBlock {
 
 	public BlockSprinkler() {
 		super(Config.blockSprinklerId, Material.water);
-		setupBlock(this, "sprinkler", TileEntitySprinkler.class);
+		setupBlock(this, "sprinkler", MixinPartsRegistry.instance.createClass(TileEntitySprinkler.class, InventoryMixin.class));
 		setRotationMode(BlockRotationMode.FOUR_DIRECTIONS);
 	}
 

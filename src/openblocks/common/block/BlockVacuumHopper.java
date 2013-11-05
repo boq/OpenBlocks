@@ -6,13 +6,15 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.Config;
+import openblocks.asm.mixins.MixinPartsRegistry;
 import openblocks.common.tileentity.TileEntityVacuumHopper;
+import openblocks.mixins.SidedInventoryMixin;
 
 public class BlockVacuumHopper extends OpenBlock {
 
 	public BlockVacuumHopper() {
 		super(Config.blockVacuumHopperId, Material.ground);
-		setupBlock(this, "vacuumhopper", TileEntityVacuumHopper.class);
+		setupBlock(this, "vacuumhopper", MixinPartsRegistry.instance.createClass(TileEntityVacuumHopper.class, SidedInventoryMixin.class));
 	}
 
 	@Override

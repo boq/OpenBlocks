@@ -19,8 +19,7 @@ public class CorePlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String getSetupClass() {
-		// TODO Auto-generated method stub
-		return null;
+		return "openblocks.asm.mixins.ClassLoaderAccess$Setup";
 	}
 
 	@Override

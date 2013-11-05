@@ -1,11 +1,5 @@
 package openblocks.common.block;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
@@ -23,13 +17,8 @@ import openblocks.common.api.*;
 import openblocks.common.item.ItemOpenBlock;
 import openblocks.common.tileentity.NetworkedTileEntity;
 import openblocks.common.tileentity.OpenTileEntity;
-import openblocks.sync.ISyncableObject;
 import openblocks.sync.SyncableDirection;
 import openblocks.utils.BlockUtils;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
-
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -97,8 +86,7 @@ public abstract class OpenBlock extends Block {
 		return null;
 	}
 	
-	@Override
-	public TileEntity createTileEntity(World world, int metadata) {
+	public TileEntity createTileEntity() {
 		OpenTileEntity te = null;
 		try {
 			if (teClass != null) { te = teClass.getConstructor(new Class[0]).newInstance(); }
@@ -112,6 +100,11 @@ public abstract class OpenBlock extends Block {
 			te.setup();
 		}
 		return te;
+	}
+	
+	@Override
+	public TileEntity createTileEntity(World world, int metadata) {
+		return createTileEntity();
 	}
 
 	@Override

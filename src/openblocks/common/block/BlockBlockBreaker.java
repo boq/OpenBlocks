@@ -6,7 +6,9 @@ import net.minecraft.util.Icon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.Config;
+import openblocks.asm.mixins.MixinPartsRegistry;
 import openblocks.common.tileentity.TileEntityBlockBreaker;
+import openblocks.mixins.InventoryMixin;
 import openblocks.utils.SimpleBlockTextureHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -21,7 +23,7 @@ public class BlockBlockBreaker extends OpenBlock {
 
 	public BlockBlockBreaker() {
 		super(Config.blockBlockBreakerId, Material.rock);
-		setupBlock(this, "blockbreaker", TileEntityBlockBreaker.class);
+		setupBlock(this, "blockbreaker", MixinPartsRegistry.instance.createClass(TileEntityBlockBreaker.class, InventoryMixin.class));
 		setRotationMode(BlockRotationMode.SIX_DIRECTIONS);
 		setPlacementMode(BlockPlacementMode.ENTITY_ANGLE);
 	}

@@ -57,17 +57,17 @@ public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 		TileEntityBearTrap teBearTrap = new TileEntityBearTrap();
 		inventoryTileEntities.put(OpenBlocks.Blocks.bearTrap, teBearTrap);
 
-		TileEntitySprinkler teSprinkler = new TileEntitySprinkler();
+		TileEntity teSprinkler = OpenBlocks.Blocks.sprinkler.createTileEntity();
 		inventoryTileEntities.put(OpenBlocks.Blocks.sprinkler, teSprinkler);
 
-		TileEntityVacuumHopper teHopper = new TileEntityVacuumHopper();
+		TileEntity teHopper = OpenBlocks.Blocks.vacuumHopper.createTileEntity();
 		inventoryTileEntities.put(OpenBlocks.Blocks.vacuumHopper, teHopper);
 
 		TileEntityCannon teCannon = new TileEntityCannon();
 		teCannon.disableLineRender();
 		inventoryTileEntities.put(OpenBlocks.Blocks.cannon, teCannon);
 
-		TileEntityBigButton teButton = new TileEntityBigButton();
+		TileEntity teButton = OpenBlocks.Blocks.bigButton.createTileEntity();
 		inventoryTileEntities.put(OpenBlocks.Blocks.bigButton, teButton);
 
 		TileEntityFan teFan = new TileEntityFan();
@@ -76,10 +76,10 @@ public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 		TileEntityVillageHighlighter teVillageHighlighter = new TileEntityVillageHighlighter();
 		inventoryTileEntities.put(OpenBlocks.Blocks.villageHighlighter, teVillageHighlighter);
 
-		TileEntityAutoAnvil teAutoAnvil = new TileEntityAutoAnvil();
+		TileEntity teAutoAnvil = OpenBlocks.Blocks.autoAnvil.createTileEntity();
 		inventoryTileEntities.put(OpenBlocks.Blocks.autoAnvil, teAutoAnvil);
 
-		TileEntityAutoEnchantmentTable teAutoTable = new TileEntityAutoEnchantmentTable();
+		TileEntity teAutoTable = OpenBlocks.Blocks.autoEnchantmentTable.createTileEntity();
 		inventoryTileEntities.put(OpenBlocks.Blocks.autoEnchantmentTable, teAutoTable);
 
 		TileEntityRopeLadder teRopeLadder = new TileEntityRopeLadder();

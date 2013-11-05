@@ -13,7 +13,7 @@ import openblocks.common.container.ContainerItemDropper;
 import openblocks.utils.InventoryUtils;
 import openblocks.utils.OpenBlocksFakePlayer;
 
-public class TileEntityItemDropper extends OpenTileEntity
+public abstract class TileEntityItemDropper extends OpenTileEntity
 		implements IActivateAwareTile, INeighbourAwareTile, IInventory, IHasGui {
 	static final int BUFFER_SIZE = 9;
 

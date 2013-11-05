@@ -2,13 +2,13 @@ package openblocks.common.tileentity;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openblocks.OpenBlocks;
+import openblocks.asm.mixins.ExtensionPoint;
 import openblocks.common.GenericInventory;
 import openblocks.common.block.OpenBlock;
 import cpw.mods.fml.relauncher.Side;
@@ -24,6 +24,10 @@ public abstract class OpenTileEntity extends TileEntity {
 	
 	public void setInventory(GenericInventory inventory) {
 		this.inventory = inventory;
+	}
+	
+	public GenericInventory getInventory() {
+		return inventory;
 	}
 	
 	public void setup() {
@@ -138,73 +142,15 @@ public abstract class OpenTileEntity extends TileEntity {
 		return isUsedForClientInventoryRendering;
 	}
 
-	public int getSizeInventory() {
-		if (inventory == null) return 0;
-		return inventory.getSizeInventory();
-	}
-
-	public ItemStack getStackInSlot(int i) {
-		if (inventory == null) return null;
-		return inventory.getStackInSlot(i);
-	}
-
-	public ItemStack decrStackSize(int i, int j) {
-		if (inventory == null) return null;
-		return inventory.decrStackSize(i, j);
-	}
-
-	public ItemStack getStackInSlotOnClosing(int i) {
-		if (inventory == null) return null;
-		return inventory.getStackInSlotOnClosing(i);
-	}
-
-	public void setInventorySlotContents(int i, ItemStack itemstack) {
-		if (inventory == null) return;
-		inventory.setInventorySlotContents(i, itemstack);
-	}
-
-	public String getInvName() {
-		if (inventory == null) return "";
-		return inventory.getInvName();
-	}
-
-	public boolean isInvNameLocalized() {
-		if (inventory == null) return false;
-		return inventory.isInvNameLocalized();
-	}
-
-	public int getInventoryStackLimit() {
-		if (inventory == null) return 0;
-		return inventory.getInventoryStackLimit();
-	}
-
-	public boolean isUseableByPlayer(EntityPlayer entityplayer) {
-		if (inventory == null) return false;
-		return inventory.isUseableByPlayer(entityplayer);
-	}
-
-	public void openChest() {}
-
-	public void closeChest() {}
-
-	@SuppressWarnings("unused")
-	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
-		return true;
-	}
-	
 	@Override
+	@ExtensionPoint
 	public void writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
-		if (inventory != null) {
-			inventory.writeToNBT(tag);
-		}
 	}
 
 	@Override
+	@ExtensionPoint
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
-		if (inventory != null) {
-			inventory.readFromNBT(tag);
-		}
 	}
 }

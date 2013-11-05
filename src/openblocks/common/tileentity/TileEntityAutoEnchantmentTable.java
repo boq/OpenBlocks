@@ -22,7 +22,7 @@ import openblocks.utils.EnchantmentUtils;
 import openblocks.utils.InventoryUtils;
 import openblocks.utils.SlotSideHelper;
 
-public class TileEntityAutoEnchantmentTable extends NetworkedTileEntity
+public abstract class TileEntityAutoEnchantmentTable extends NetworkedTileEntity
 		implements IAwareTile, IFluidHandler, ISidedInventory, IHasGui {
 
 	protected static final int TANK_CAPACITY = EnchantmentUtils.getLiquidForLevel(30);

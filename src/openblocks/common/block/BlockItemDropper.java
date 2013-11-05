@@ -4,7 +4,9 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.util.Icon;
 import openblocks.Config;
+import openblocks.asm.mixins.MixinPartsRegistry;
 import openblocks.common.tileentity.TileEntityItemDropper;
+import openblocks.mixins.InventoryMixin;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -14,7 +16,7 @@ public class BlockItemDropper extends OpenBlock {
 
 	public BlockItemDropper() {
 		super(Config.blockItemDropperId, Material.rock);
-		setupBlock(this, "itemDropper", TileEntityItemDropper.class);
+		setupBlock(this, "itemDropper", MixinPartsRegistry.instance.createClass(TileEntityItemDropper.class, InventoryMixin.class));
 		setRotationMode(BlockRotationMode.SIX_DIRECTIONS);
 	}
 
